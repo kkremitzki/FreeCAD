@@ -613,8 +613,7 @@ CmdTestMDI2::CmdTestMDI2()
 
 void CmdTestMDI2::activated(int iMsg)
 {
-    Q_UNUSED(iMsg); 
-    QMdiArea* area = getMainWindow()->findChild<QMdiArea*>();
+    QMdiArea* area = getMainWindow()->getMdiArea();
     if (area) {
         MDIView* mdi = getMainWindow()->activeWindow();
         area->removeSubWindow(mdi->parentWidget());

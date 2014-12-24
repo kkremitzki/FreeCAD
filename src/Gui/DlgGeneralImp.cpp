@@ -148,44 +148,39 @@ void DlgGeneralImp::saveSettings()
 
     hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/MainWindow");
     hGrp->SetBool("TiledBackground", this->tiledBackground->isChecked());
-    QMdiArea* mdi = getMainWindow()->findChild<QMdiArea*>();
-    mdi->setProperty("showImage", this->tiledBackground->isChecked());
+    QMdiArea* mdi = getMainWindow()->getMdiArea();
+    if(mdi) {
+        mdi->setProperty("showImage", this->tiledBackground->isChecked());
 
-    QVariant sheet = this->StyleSheets->itemData(this->StyleSheets->currentIndex());
-    if (this->selectedStyleSheet != sheet.toString()) {
-        this->selectedStyleSheet = sheet.toString();
-        hGrp->SetASCII("StyleSheet", (const char*)sheet.toByteArray());
+        QVariant sheet = this->StyleSheets->itemData(this->StyleSheets->currentIndex());
+        if (this->selectedStyleSheet != sheet.toString()) {
+            this->selectedStyleSheet = sheet.toString();
+            hGrp->SetASCII("StyleSheet", (const char*)sheet.toByteArray());
 
-        if (!sheet.toString().isEmpty()) {
-            QFile f(sheet.toString());
-            if (f.open(QFile::ReadOnly)) {
-                mdi->setBackground(QBrush(Qt::NoBrush));
-                QTextStream str(&f);
-                qApp->setStyleSheet(str.readAll());
-
-                ActionStyleEvent e(ActionStyleEvent::Clear);
-                qApp->sendEvent(getMainWindow(), &e);
+            if (!sheet.toString().isEmpty()) {
+                QFile f(sheet.toString());
+                if (f.open(QFile::ReadOnly)) {
+                    mdi->setBackground(QBrush(Qt::NoBrush));
+                    QTextStream str(&f);
+                    qApp->setStyleSheet(str.readAll());
+                }
             }
         }
-    }
 
-    if (sheet.toString().isEmpty()) {
-        if (this->tiledBackground->isChecked()) {
-            qApp->setStyleSheet(QString());
-            ActionStyleEvent e(ActionStyleEvent::Restore);
-            qApp->sendEvent(getMainWindow(), &e);
-            mdi->setBackground(QPixmap(QLatin1String(":/icons/background.png")));
+        if (sheet.toString().isEmpty()) {
+            if (this->tiledBackground->isChecked()) {
+                qApp->setStyleSheet(QString());
+                mdi->setBackground(QPixmap(QLatin1String(":/icons/background.png")));
+            }
+            else {
+                qApp->setStyleSheet(QString());
+                mdi->setBackground(QBrush(QColor(160,160,160)));
+            }
         }
-        else {
-            qApp->setStyleSheet(QString());
-            ActionStyleEvent e(ActionStyleEvent::Restore);
-            qApp->sendEvent(getMainWindow(), &e);
-            mdi->setBackground(QBrush(QColor(160,160,160)));
-        }
-    }
 
-    if (mdi->style())
-        mdi->style()->unpolish(qApp);
+        if (mdi->style())
+            mdi->style()->unpolish(qApp);
+    }
 }
 
 void DlgGeneralImp::loadSettings()

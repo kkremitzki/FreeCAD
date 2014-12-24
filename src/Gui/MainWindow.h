@@ -32,6 +32,11 @@
 #include <QEvent>
 #include <QMainWindow>
 #include <QMdiArea>
+#include <QGraphicsProxyWidget>
+#include <QDeclarativeView>
+#else
+#include <QWorkspace>
+#endif
 
 class QMimeData;
 class QUrl;
@@ -53,6 +58,13 @@ namespace DockWnd {
     class HelpView;
 } //namespace DockWnd
 
+class QmlProxy : public QGraphicsProxyWidget {
+    
+  Q_OBJECT;
+  
+public:
+    QmlProxy(QGraphicsProxyWidget* parent = 0);
+};
 
 /** 
  * The MainWindow class provides a main window with menu bar, toolbars, dockable windows,
@@ -89,6 +101,13 @@ public:
      * Returns a list of all MDI windows in the worpspace.
      */
     QList<QWidget*> windows(QMdiArea::WindowOrder order = QMdiArea::CreationOrder) const;
+#else
+    QList<QWidget*> windows(QWorkspace::WindowOrder order = QWorkspace::CreationOrder) const;
+#endif
+    
+#if !defined(NO_USE_QT_MDI_AREA) 
+    QMdiArea* getMdiArea();
+#endif
     /**
      * Can be called after the caption of an MDIView has changed to update the tab's caption.
      */

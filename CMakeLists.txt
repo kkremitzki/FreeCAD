@@ -779,6 +779,53 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         endmacro(fc_wrap_cpp)
     endif (NOT BUILD_QT5)
 
+    SET(QT_MIN_VERSION 4.5.0)
+    set(QT_USE_QTNETWORK TRUE)
+    set(QT_USE_QTXML TRUE)
+    if(BUILD_GUI)
+        set(QT_USE_QTOPENGL TRUE)
+        set(QT_USE_QTSVG TRUE)
+        set(QT_USE_QTUITOOLS TRUE)
+        set(QT_USE_QTWEBKIT TRUE)
+        set(QT_USE_QTDECLARATIVE TRUE)
+    endif(BUILD_GUI)
+    find_package(Qt4 REQUIRED)
+
+    include(${QT_USE_FILE})
+
+    IF(NOT QT4_FOUND)
+        MESSAGE("Library qt-4.3 or above is not available, install QT or FreeCAD Gui version will not be built")
+    ENDIF(NOT QT4_FOUND)
+
+    IF(NOT QT_QTWEBKIT_FOUND)
+        MESSAGE("Qt Webkit not found, will not build browser integration!")
+    ENDIF(NOT QT_QTWEBKIT_FOUND)
+
+
+    # This is a special version of the built in macro qt4_wrap_cpp
+    # It is required since moc'ed files are now included instead of being added to projects directly
+    # It adds a reverse dependency to solve this
+    # This has the unfortunate side effect that some files are always rebuilt
+    # There is probably a cleaner solution than this
+    macro(fc_wrap_cpp outfiles )
+        # get include dirs
+        QT4_GET_MOC_FLAGS(moc_flags)
+        QT4_EXTRACT_OPTIONS(moc_files moc_options moc_target ${ARGN})
+        # fixes bug 0000585: bug with boost 1.48
+        SET(moc_options ${moc_options} -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
+
+        foreach(it ${moc_files})
+            get_filename_component(it ${it} ABSOLUTE)
+            QT4_MAKE_OUTPUT_FILE(${it} moc_ cpp outfile)
+            ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
+                COMMAND ${QT_MOC_EXECUTABLE}
+                ARGS ${moc_options} ${it} -o ${outfile}
+                MAIN_DEPENDENCY ${it}
+            )
+            set(${outfiles} ${${outfiles}} ${outfile})
+            add_file_dependencies(${it} ${outfile})
+        endforeach(it)
+    endmacro(fc_wrap_cpp)
 
 #--------------------FreeType-----------------------
 

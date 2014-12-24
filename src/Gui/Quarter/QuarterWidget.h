@@ -173,6 +173,12 @@ public:
   QList<QAction *> stereoModeActions(void) const;
   QList<QAction *> renderModeActions(void) const;
 
+  QWidget* getWidget();
+  QWidget* getGLWidget();
+  void     setExternGlViewport(QGLWidget* vp);
+  QWidget* getWidget() const;
+  QWidget* getGLWidget() const;
+    
 public Q_SLOTS:
   virtual void viewAll(void);
   virtual void seek(void);
@@ -184,10 +190,12 @@ public Q_SLOTS:
   void setTransparencyType(TransparencyType type);
 
 protected:
-  virtual void paintEvent(QPaintEvent*);
+  //virtual void paintEvent(QPaintEvent*);
   virtual void resizeEvent(QResizeEvent*);
   virtual bool viewportEvent(QEvent* event);
   virtual void actualRedraw(void);
+  
+  virtual void drawBackground(QPainter* painter, const QRectF& rect);
   
   double renderTime;
 
@@ -196,6 +204,8 @@ private:
   friend class QuarterWidgetP;
   class QuarterWidgetP * pimpl;
   bool initialized;  
+  //external viewport
+  QGLWidget* m_externalViewport; //TODO: move this to the pimpl
 };
 
 }}} // namespace
