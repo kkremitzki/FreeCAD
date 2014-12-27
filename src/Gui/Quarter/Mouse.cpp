@@ -47,6 +47,7 @@
 #include <QtCore/QSize>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWheelEvent>
+#include <QGraphicsSceneMouseEvent>
 
 #include <Inventor/SbVec2s.h>
 #include <Inventor/events/SoEvents.h>
@@ -67,11 +68,12 @@ public:
     delete this->mousebutton;
   }
 
-  const SoEvent * mouseMoveEvent(QMouseEvent * event);
-  const SoEvent * mouseWheelEvent(QWheelEvent * event);
-  const SoEvent * mouseButtonEvent(QMouseEvent * event);
+  const SoEvent * mouseMoveEvent(QGraphicsSceneMouseEvent * event);
+  const SoEvent * mouseMoveEvent(QGraphicsSceneHoverEvent * event);
+  const SoEvent * mouseWheelEvent(QGraphicsSceneWheelEvent * event);
+  const SoEvent * mouseButtonEvent(QGraphicsSceneMouseEvent * event);
 
-  void resizeEvent(QResizeEvent * event);
+  void resizeEvent(QGraphicsSceneResizeEvent * event);
 
   class SoLocation2Event * location2;
   class SoMouseButtonEvent * mousebutton;
@@ -103,19 +105,21 @@ const SoEvent *
 Mouse::translateEvent(QEvent * event)
 {
   switch (event->type()) {
-  case QEvent::MouseMove:
-    return PRIVATE(this)->mouseMoveEvent((QMouseEvent *) event);
-  case QEvent::MouseButtonPress:
-  case QEvent::MouseButtonRelease:
+  case QEvent::GraphicsSceneMouseMove:
+    return PRIVATE(this)->mouseMoveEvent((QGraphicsSceneMouseEvent *) event);
+  case QEvent::GraphicsSceneHoverMove:
+    return PRIVATE(this)->mouseMoveEvent((QGraphicsSceneHoverEvent *) event);
+  case QEvent::GraphicsSceneMousePress:
+  case QEvent::GraphicsSceneMouseRelease:
     // a dblclick event comes in a series of press, release, dblclick,
     // release, so we can simply treat it as an ordinary press event.
     // -mortene.
-  case QEvent::MouseButtonDblClick:
-    return PRIVATE(this)->mouseButtonEvent((QMouseEvent *) event);
-  case QEvent::Wheel:
-    return PRIVATE(this)->mouseWheelEvent((QWheelEvent *) event);
-  case QEvent::Resize:
-    PRIVATE(this)->resizeEvent((QResizeEvent *) event);
+  case QEvent::GraphicsSceneMouseDoubleClick:
+    return PRIVATE(this)->mouseButtonEvent((QGraphicsSceneMouseEvent *) event);
+  case QEvent::GraphicsSceneWheel:
+    return PRIVATE(this)->mouseWheelEvent((QGraphicsSceneWheelEvent *) event);
+  case QEvent::GraphicsSceneResize:
+    PRIVATE(this)->resizeEvent((QGraphicsSceneResizeEvent *) event);
     return NULL;
   default:
     return NULL;
@@ -123,16 +127,16 @@ Mouse::translateEvent(QEvent * event)
 }
 
 void
-MouseP::resizeEvent(QResizeEvent * event)
+MouseP::resizeEvent(QGraphicsSceneResizeEvent * event)
 {
-  this->windowsize = SbVec2s(event->size().width(),
-                             event->size().height());
+  this->windowsize = SbVec2s(event->newSize().width(),
+                             event->newSize().height());
 }
 
 const SoEvent *
-MouseP::mouseMoveEvent(QMouseEvent * event)
+MouseP::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
-  PUBLIC(this)->setModifiers(this->location2, event);
+  PUBLIC(this)->setModifiers(this->location2, event->modifiers());
 
   assert(this->windowsize[1] != -1);
   SbVec2s pos(event->pos().x(), this->windowsize[1] - event->pos().y() - 1);
@@ -142,9 +146,21 @@ MouseP::mouseMoveEvent(QMouseEvent * event)
 }
 
 const SoEvent *
-MouseP::mouseWheelEvent(QWheelEvent * event)
+MouseP::mouseMoveEvent(QGraphicsSceneHoverEvent * event)
 {
-  PUBLIC(this)->setModifiers(this->mousebutton, event);
+  PUBLIC(this)->setModifiers(this->location2, event->modifiers());
+
+  assert(this->windowsize[1] != -1);
+  SbVec2s pos(event->pos().x(), this->windowsize[1] - event->pos().y() - 1);
+  this->location2->setPosition(pos);
+  this->mousebutton->setPosition(pos);
+  return this->location2;
+}
+
+const SoEvent *
+MouseP::mouseWheelEvent(QGraphicsSceneWheelEvent * event)
+{
+  PUBLIC(this)->setModifiers(this->mousebutton, event->modifiers());
   SbVec2s pos(event->pos().x(), PUBLIC(this)->windowsize[1] - event->pos().y() - 1);
   this->location2->setPosition(pos);
   this->mousebutton->setPosition(pos);
@@ -163,15 +179,15 @@ MouseP::mouseWheelEvent(QWheelEvent * event)
 }
 
 const SoEvent *
-MouseP::mouseButtonEvent(QMouseEvent * event)
+MouseP::mouseButtonEvent(QGraphicsSceneMouseEvent * event)
 {
-  PUBLIC(this)->setModifiers(this->mousebutton, event);
+  PUBLIC(this)->setModifiers(this->mousebutton, event->modifiers());
   SbVec2s pos(event->pos().x(), PUBLIC(this)->windowsize[1] - event->pos().y() - 1);
   this->location2->setPosition(pos);
   this->mousebutton->setPosition(pos);
 
-  ((event->type() == QEvent::MouseButtonPress) ||
-   (event->type() == QEvent::MouseButtonDblClick)) ?
+  ((event->type() == QEvent::GraphicsSceneMousePress) ||
+   (event->type() == QEvent::GraphicsSceneMouseDoubleClick)) ?
     this->mousebutton->setState(SoButtonEvent::DOWN):
     this->mousebutton->setState(SoButtonEvent::UP);
 

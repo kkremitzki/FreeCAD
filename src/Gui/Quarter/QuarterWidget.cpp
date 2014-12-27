@@ -90,6 +90,7 @@
 #include "QuarterP.h"
 
 #include <iostream>
+#include <boost/graph/graph_concepts.hpp>
 
 using namespace SIM::Coin3D::Quarter;
 
@@ -132,16 +133,6 @@ using namespace SIM::Coin3D::Quarter;
 #ifndef GL_MULTISAMPLE_BIT_EXT
 #define GL_MULTISAMPLE_BIT_EXT 0x20000000
 #endif
-  
-//We need to avoid buffer swaping when initializing a QPainter on this widget
-class CustomGLWidget : public QGLWidget {
-public:
-    CustomGLWidget(const QGLFormat& fo, QWidget* parent = 0, const QGLWidget* shareWidget = 0, Qt::WindowFlags f = 0)
-     : QGLWidget(fo, parent, shareWidget, f)
-    {
-         //setAutoBufferSwap(false);
-    }
-};
 
 /*! constructor */
 QuarterWidget::QuarterWidget(const QGLFormat & format, QWidget * parent, const QGLWidget * sharewidget, Qt::WindowFlags f)
@@ -172,14 +163,19 @@ QuarterWidget::constructor(const QGLFormat & format, const QGLWidget * sharewidg
 {
   QGraphicsScene* scene = new QGraphicsScene;
   setScene(scene);
-  setViewport(new CustomGLWidget(format, this, sharewidget)); 
+  setViewport(new QGLWidget(format, this, sharewidget)); 
+  setSource(QString::fromAscii("/home/stefan/Projects/FreeCAD_sf_master/src/Gui/Quarter/View3D.qml"));
   
   setFrameStyle(QFrame::NoFrame);
-  setAutoFillBackground(false);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  setAutoFillBackground(false);
+  viewport()->setAutoFillBackground(false);
     
   PRIVATE(this) = new QuarterWidgetP(this, sharewidget);
+  QObject* quarteritem = rootObject()->findChild<QObject*>("scene3d");
+  if(quarteritem)
+      static_cast<QuarterDrawDeclarativeItem*>(quarteritem)->setRenderContext(this, PRIVATE(this));
 
   PRIVATE(this)->sorendermanager = new SoRenderManager;
   PRIVATE(this)->initialsorendermanager = true;
@@ -215,11 +211,13 @@ QuarterWidget::constructor(const QGLFormat & format, const QGLWidget * sharewidg
   // both tabbing and clicking
   this->setFocusPolicy(Qt::StrongFocus);
 
-  this->installEventFilter(PRIVATE(this)->eventfilter);
-  this->installEventFilter(PRIVATE(this)->interactionmode);
+  //install the event filters to our scene mouse item
+  QObject* mouseitem = rootObject()->findChild<QObject*>("interaction3d");
+  if(mouseitem)
+      static_cast<QuarterInteractionDeclarativeItem*>(mouseitem)->setEventContext(PRIVATE(this)->eventfilter, 
+                                                                        PRIVATE(this)->interactionmode);
   
-  initialized = false;
-  m_externalViewport = NULL;
+  PRIVATE(this)->externalViewport = NULL;
 }
 
 /*! destructor */
@@ -682,88 +680,15 @@ QuarterWidget::seek(void)
  */
 void QuarterWidget::resizeEvent(QResizeEvent* event)
 {
-    SbViewportRegion vp(event->size().width(), event->size().height());
+    SbViewportRegion vp(event->size().width(), event->size().height()); 
+    
     PRIVATE(this)->sorendermanager->setViewportRegion(vp);
     PRIVATE(this)->soeventmanager->setViewportRegion(vp);
-    if (scene())
-        scene()->setSceneRect(QRect(QPoint(0, 0), event->size()));
-    QGraphicsView::resizeEvent(event);
-}
-
-/*!
-  Overridden from QGLWidget to render the scenegraph
-*/
-//void QuarterWidget::paintEvent(QPaintEvent* event)
-void QuarterWidget::drawBackground(QPainter* painter, const QRectF& rect)
-{
-
-    painter->beginNativePainting();
     
-    std::clock_t begin = std::clock();
-
-    if(!initialized) {
-        glEnable(GL_DEPTH_TEST);
-        this->getSoRenderManager()->reinitialize();
-        initialized = true;
-    }
-
-    getSoRenderManager()->activate();
-
-    glEnable(GL_DEPTH_TEST);
-    glMatrixMode(GL_PROJECTION);
-
-    QGLWidget* w = static_cast<QGLWidget*>(this->getGLWidget());
-    assert(w->isValid() && "No valid GL context found!");
-    // We might have to process the delay queue here since we don't know
-    // if paintGL() is called from Qt, and we might have some sensors
-    // waiting to trigger (the redraw sensor has a lower priority than a
-    // normal field sensor to guarantee that your sensor is processed
-    // before the next redraw). Disable autorendering while we do this
-    // to avoid recursive redraws.
-
-    // We set the PRIVATE(this)->processdelayqueue = false in redraw()
-    // to avoid processing the delay queue when paintGL() is triggered
-    // by us, and we don't want to process the delay queue in those
-    // cases
-
-    PRIVATE(this)->autoredrawenabled = false;
-
-    if(PRIVATE(this)->processdelayqueue && SoDB::getSensorManager()->isDelaySensorPending()) {
-        // processing the sensors might trigger a redraw in another
-        // context. Release this context temporarily
-        w->doneCurrent();
-        SoDB::getSensorManager()->processDelayQueue(false);
-        w->makeCurrent();
-    }
-
-    assert(w->isValid() && "No valid GL context found!");
-
-//    glDrawBuffer(w->doubleBuffer() ? GL_BACK : GL_FRONT);
-
-    w->makeCurrent();
-    this->actualRedraw();
-
-    //start the standard graphics view processing for all widgets and graphic items. As 
-    //QGraphicsView initaliizes a QPainter which changes the Opengl context in an unpredictable 
-    //manner we need to store the context and recreate it after Qt is done.
-//     glPushAttrib(GL_MULTISAMPLE_BIT_EXT);
-//     inherited::paintEvent(event);
-//     glPopAttrib();
-
-//    if (w->doubleBuffer()) { w->swapBuffers(); }
-
-    PRIVATE(this)->autoredrawenabled = true;
-
-    // process the delay queue the next time we enter this function,
-    // unless we get here after a call to redraw().
-    PRIVATE(this)->processdelayqueue = true;
-
-    std::clock_t end = std::clock();
-    renderTime = double(double(end-begin)/CLOCKS_PER_SEC)*1000.0;
-    
-    painter->endNativePainting();
+    rootObject()->setProperty("width", event->size().width());
+    rootObject()->setProperty("height", event->size().height()); 
 }
-
+/*
 bool QuarterWidget::viewportEvent(QEvent* event)
 {
     // Disable the old implementation of this method as it show
@@ -790,33 +715,6 @@ bool QuarterWidget::viewportEvent(QEvent* event)
      //if we return false the events get processed normally, this means they get passed to the quarter
      //event filters for processing in the scene graph. If we return true event processing stops here.
      return false;
-#else
-    // If no item is selected still let the graphics scene handle it but
-    // additionally handle it by this viewer. This is e.g. needed when
-    // resizing a widget item because the cursor may already be outside
-    // this widget.
-    if (event->type() == QEvent::Wheel ||
-        event->type() == QEvent::MouseButtonDblClick ||
-        event->type() == QEvent::MouseButtonPress) {
-        QMouseEvent* mouse = static_cast<QMouseEvent*>(event);
-        QGraphicsItem *item = itemAt(mouse->pos());
-        if (!item) {
-            QGraphicsView::viewportEvent(event);
-            return false;
-        }
-    }
-    else if (event->type() == QEvent::MouseMove ||
-             event->type() == QEvent::MouseButtonRelease) {
-        QGraphicsScene* glScene = this->scene();
-        if (!(glScene && glScene->mouseGrabberItem())) {
-            QGraphicsView::viewportEvent(event);
-            return false;
-        }
-    }
-
-    return QGraphicsView::viewportEvent(event);
-#endif
-}
 
 /*!
   Used for rendering the scene. Usually Coin/Quarter will automatically redraw
@@ -1166,14 +1064,21 @@ QWidget* QuarterWidget::getGLWidget()
         return viewport();
     }
     else {
-        assert(m_externalViewport);
-        return m_externalViewport;
+        assert(PRIVATE(this)->externalViewport);
+        return PRIVATE(this)->externalViewport;
     }
 }
 
 void QuarterWidget::setExternGlViewport(QGLWidget* vp)
 {
-     m_externalViewport = vp;
+     assert(!PRIVATE(this)->externalViewport);
+    
+     //remove the gl viewport from the cached gl contexts
+     PRIVATE(this)->switchToExternalGLViewport();
+     PRIVATE(this)->externalViewport = vp;
+     
+     //delete the gl viewport and us a normal qwidget
+     setViewport(NULL);
 }
 
 
@@ -1188,5 +1093,161 @@ QWidget* QuarterWidget::getGLWidget() const
 {
     return const_cast<QWidget*>(getGLWidget());
 }
+
+QuarterDrawDeclarativeItem::QuarterDrawDeclarativeItem(QDeclarativeItem* parent): QDeclarativeItem(parent),
+    initialized(false), quarterwidget(NULL), pimpl(NULL)
+{
+    //by default a item has no content, we need to change that 
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
+}
+
+void QuarterDrawDeclarativeItem::setRenderContext(QuarterWidget* w, QuarterWidgetP* wp)
+{
+    quarterwidget = w;
+    pimpl = wp;
+}
+
+void QuarterDrawDeclarativeItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt, QWidget* widget)
+{
+    if(!pimpl || !quarterwidget)
+        return;
+       
+    //setup the background color
+    painter->setBrush(QBrush(quarterwidget->backgroundColor()));
+    painter->setPen(QPen(quarterwidget->backgroundColor()));
+    painter->drawRect(quarterwidget->viewport()->rect());
+    
+    //we need to update the viewport origin. this is needed as the external viewport may have changed its
+    //size without resizing this widget. We still need to draw at a different origin, as this on is relative
+    //to the external viewport
+    if(pimpl->externalViewport) {
+        
+        int diff = pimpl->externalViewport->height() - quarterwidget->viewport()->height();
+        QPoint map = painter->deviceTransform().map(QPoint(0,0));
+        
+        SbViewportRegion vp;
+        vp.setViewportPixels(SbVec2s(map.x(), diff - map.y()),  PRIVATE(this)->sorendermanager->getViewportRegion().getViewportSizePixels());
+        PRIVATE(this)->sorendermanager->setViewportRegion(vp);
+    }
+    
+    painter->beginNativePainting();
+    
+    std::clock_t begin = std::clock();
+
+    if(!initialized) {
+        glEnable(GL_DEPTH_TEST);
+        quarterwidget->getSoRenderManager()->reinitialize();
+        initialized = true;
+    }
+
+    quarterwidget->getSoRenderManager()->activate();
+
+    glEnable(GL_DEPTH_TEST);
+    glMatrixMode(GL_PROJECTION);
+
+    QGLWidget* w = static_cast<QGLWidget*>(quarterwidget->getGLWidget());
+    assert(w->isValid() && "No valid GL context found!");
+    
+    // We might have to process the delay queue here since we don't know
+    // if paintGL() is called from Qt, and we might have some sensors
+    // waiting to trigger (the redraw sensor has a lower priority than a
+    // normal field sensor to guarantee that your sensor is processed
+    // before the next redraw). Disable autorendering while we do this
+    // to avoid recursive redraws.
+
+    // We set the PRIVATE(this)->processdelayqueue = false in redraw()
+    // to avoid processing the delay queue when paintGL() is triggered
+    // by us, and we don't want to process the delay queue in those
+    // cases
+
+    pimpl->autoredrawenabled = false;
+
+    if(pimpl->processdelayqueue && SoDB::getSensorManager()->isDelaySensorPending()) {
+        // processing the sensors might trigger a redraw in another
+        // context. Release this context temporarily
+        w->doneCurrent();
+        SoDB::getSensorManager()->processDelayQueue(FALSE);
+        w->makeCurrent();
+    }
+
+    assert(w->isValid() && "No valid GL context found!");
+
+    w->makeCurrent();
+    quarterwidget->actualRedraw();
+
+    pimpl->autoredrawenabled = true;
+
+    // process the delay queue the next time we enter this function,
+    // unless we get here after a call to redraw().
+    pimpl->processdelayqueue = true;
+
+    std::clock_t end = std::clock();
+    quarterwidget->renderTime = double(double(end-begin)/CLOCKS_PER_SEC)*1000.0;
+    
+    painter->endNativePainting();
+}
+
+QuarterInteractionDeclarativeItem::QuarterInteractionDeclarativeItem(QDeclarativeItem* parent): QDeclarativeItem(parent), 
+    m_eventfilter(NULL), m_interactionMode(NULL)
+{
+    setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton | Qt::MiddleButton );
+    setAcceptHoverEvents(true);
+    setFlag(ItemIsFocusable, true);
+}
+
+void QuarterInteractionDeclarativeItem::setEventContext(EventFilter* filter, InteractionMode* mode)
+{
+    m_eventfilter     = filter;
+    m_interactionMode = mode;
+}
+
+bool QuarterInteractionDeclarativeItem::sceneEvent(QEvent* e)
+{    
+    if(!m_eventfilter || !m_interactionMode)
+        return false;
+    
+    if(m_eventfilter->eventFilter(this, e)) {
+        setFocus(true);
+        return true;
+    }
+    
+    if(m_interactionMode->eventFilter(this, e)) {
+        setFocus(true);
+        return true;
+    }
+    
+    return QObject::eventFilter(this, e);
+}
+
+void QuarterInteractionDeclarativeItem::geometryChanged(const QRectF& newGeometry, const QRectF& oldGeometry)
+{
+    if(!m_eventfilter || !m_interactionMode)
+        return;
+        
+    QGraphicsSceneResizeEvent event;
+    event.setOldSize(oldGeometry.size());
+    event.setNewSize(newGeometry.size());
+    
+    if(m_eventfilter->eventFilter(this, &event))
+        return;
+    
+    if(m_interactionMode->eventFilter(this, &event))
+        return;
+    
+    QDeclarativeItem::geometryChanged(newGeometry, oldGeometry);
+    return;
+}
+
+void QuarterInteractionDeclarativeItem::keyPressEvent(QKeyEvent* event)
+{
+    sceneEvent(event);
+}
+
+void QuarterInteractionDeclarativeItem::keyReleaseEvent(QKeyEvent* event)
+{
+    sceneEvent(event);
+}
+
+
 
 #undef PRIVATE
