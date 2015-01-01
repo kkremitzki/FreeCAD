@@ -1131,6 +1131,7 @@ void QuarterDrawDeclarativeItem::paint(QPainter* painter, const QStyleOptionGrap
     }
     
     painter->beginNativePainting();
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
     
     std::clock_t begin = std::clock();
 
@@ -1184,7 +1185,9 @@ void QuarterDrawDeclarativeItem::paint(QPainter* painter, const QStyleOptionGrap
     std::clock_t end = std::clock();
     quarterwidget->renderTime = double(double(end-begin)/CLOCKS_PER_SEC)*1000.0;
     
+    glPopAttrib();
     painter->endNativePainting();
+
 }
 
 QuarterInteractionDeclarativeItem::QuarterInteractionDeclarativeItem(QDeclarativeItem* parent): QDeclarativeItem(parent), 

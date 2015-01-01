@@ -60,7 +60,8 @@ namespace DockWnd {
 
 class QmlProxy : public QGraphicsProxyWidget {
     
-  Q_OBJECT;
+    Q_OBJECT;
+    Q_PROPERTY(QWidget* proxy READ widget WRITE setWidget)
   
 public:
     QmlProxy(QGraphicsProxyWidget* parent = 0);
