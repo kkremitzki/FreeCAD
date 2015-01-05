@@ -161,8 +161,6 @@ QuarterWidget::QuarterWidget(QGLContext * context, QWidget * parent, const QGLWi
 void
 QuarterWidget::constructor(const QGLFormat & format, const QGLWidget * sharewidget)
 {
-  QGraphicsScene* scene = new QGraphicsScene;
-  setScene(scene);
   setViewport(new QGLWidget(format, this, sharewidget)); 
   setSource(QString::fromAscii("/home/stefan/Projects/FreeCAD_sf_master/src/Gui/Quarter/View3D.qml"));
   
@@ -214,8 +212,10 @@ QuarterWidget::constructor(const QGLFormat & format, const QGLWidget * sharewidg
   //install the event filters to our scene mouse item
   QObject* mouseitem = rootObject()->findChild<QObject*>("interaction3d");
   if(mouseitem)
-      static_cast<QuarterInteractionDeclarativeItem*>(mouseitem)->setEventContext(PRIVATE(this)->eventfilter, 
+     static_cast<QuarterInteractionDeclarativeItem*>(mouseitem)->setEventContext(PRIVATE(this)->eventfilter, 
                                                                         PRIVATE(this)->interactionmode);
+  else 
+     qWarning() << "No Interaction3D element found, mouse handling disabled";
   
   PRIVATE(this)->externalViewport = NULL;
 }
@@ -682,11 +682,11 @@ void QuarterWidget::resizeEvent(QResizeEvent* event)
 {
     SbViewportRegion vp(event->size().width(), event->size().height()); 
     
+    rootObject()->setProperty("width", event->size().width()); 
+    rootObject()->setProperty("height", event->size().height());
+    
     PRIVATE(this)->sorendermanager->setViewportRegion(vp);
     PRIVATE(this)->soeventmanager->setViewportRegion(vp);
-    
-    rootObject()->setProperty("width", event->size().width());
-    rootObject()->setProperty("height", event->size().height()); 
 }
 /*
 bool QuarterWidget::viewportEvent(QEvent* event)
