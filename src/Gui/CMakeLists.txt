@@ -280,6 +280,7 @@ set(Gui_MOC_HDRS
     WidgetFactory.h
     Widgets.h
     QmlTypes.h
+    DynamicInterfaceManager.h
     Language/Translator.h
     propertyeditor/PropertyEditor.h
     propertyeditor/PropertyItem.h
