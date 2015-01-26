@@ -284,7 +284,7 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     setCentralWidget(vbox);
     
 #else
-    bool dynamicLayout = true;
+    bool dynamicLayout = usesDynamicInterface();
     if(!dynamicLayout) {
         d->declarativeView = NULL;
         d->mdiArea = new QMdiArea();
@@ -399,7 +399,7 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
         pDockMgr->registerDockWindow("Std_TreeView", tree);   
     else 
         GlobalDynamicInterfaceManager::get()->addInterfaceItem(tree, true);
-/*
+
     // Property view
     PropertyDockView* pcPropView = new PropertyDockView(0, this);
     pcPropView->setObjectName
@@ -418,16 +418,23 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     if(!dynamicLayout)
         pDockMgr->registerDockWindow("Std_SelectionView", pcSelectionView);
     else 
-        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcSelectionView, true);*/
-/*
+        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcSelectionView, true);
+
     // Combo view
     CombiView* pcCombiView = new CombiView(0, this);
     pcCombiView->setObjectName(QString::fromLatin1(QT_TRANSLATE_NOOP("QDockWidget","Combo View")));
     pcCombiView->setMinimumWidth(150);
-    if(!dynamicLayout)
+    if(!dynamicLayout) {
+        CombiView* pcCombiView = new CombiView(0, this);
+        pcCombiView->setObjectName(QString::fromAscii(QT_TRANSLATE_NOOP("QDockWidget","Combo View")));
+        pcCombiView->setMinimumWidth(150);
         pDockMgr->registerDockWindow("Std_CombiView", pcCombiView);
-    else 
-        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcCombiView, true);*/
+    }
+    else {
+        Gui::TaskView::TaskView* task = new Gui::TaskView::TaskView(this);
+        task->setObjectName(QString::fromAscii(QT_TRANSLATE_NOOP("QDockWidget","Task View")));
+        GlobalDynamicInterfaceManager::get()->addInterfaceItem(task, true);
+    }
 
 #if QT_VERSION < 0x040500
     // Report view
@@ -446,7 +453,7 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
         pDockMgr->registerDockWindow("Std_ReportView", pcReport);
     else 
         GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcReport, true);
-/*
+
     // Python console
     PythonConsole* pcPython = new PythonConsole(this);
     pcPython->setWordWrapMode(QTextOption::NoWrap);
@@ -470,7 +477,7 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
         }
     }
     else 
-        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcPython, true);*/
+        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcPython, true);
 
 #if 0 //defined(Q_OS_WIN32) this portion of code is not able to run with a vanilla Qtlib build on Windows.
     // The MainWindowTabBar is used to show tabbed dock windows with icons
@@ -1785,6 +1792,12 @@ void MainWindow::customEvent(QEvent* e)
         }
     }
 }
+
+bool MainWindow::usesDynamicInterface()
+{
+    return true;
+}
+
 
 // ----------------------------------------------------------
 

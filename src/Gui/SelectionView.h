@@ -37,7 +37,8 @@ namespace DockWnd {
 /** A test class. A more elaborate class description.
  */
 class SelectionView : public Gui::DockWindow, 
-                      public Gui::SelectionSingleton::ObserverType
+                      public Gui::SelectionSingleton::ObserverType,
+                      public ParameterGrp::ObserverType
 {
     Q_OBJECT
 
@@ -65,7 +66,10 @@ public:
 
     /// get called when the document is changed or updated
     virtual void onUpdate(void);
-
+    
+    //parameters changed
+    virtual void OnChange(Base::Subject< const char* >& rCaller, const char* rcReason);
+ 
     QListWidget* selectionView;
 
 public Q_SLOTS:
@@ -81,6 +85,8 @@ public Q_SLOTS:
     void toPython(void);
     void touch(void);
 
+private:
+    ParameterGrp::handle _prefs;
 };
 
 } // namespace DockWnd

@@ -422,6 +422,14 @@ PythonConsole::PythonConsole(QWidget *parent)
     .arg(QString::fromLatin1(version)).arg(QString::fromLatin1(platform));
     d->output = d->info;
     printPrompt(PythonConsole::Complete);
+    
+    if(MainWindow::getInstance()->usesDynamicInterface()) {
+        _prefs = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Interface");
+        _prefs->Attach(this);
+        OnChange(*_prefs,"BackgroundColor");
+        OnChange(*_prefs,"BackgroundAlpha");
+    }
+
 }
 
 /** Destroys the object and frees any allocated resources */
@@ -441,10 +449,10 @@ PythonConsole::~PythonConsole()
 void PythonConsole::OnChange( Base::Subject<const char*> &rCaller,const char* sReason )
 {
     Q_UNUSED(rCaller); 
-    ParameterGrp::handle hPrefGrp = getWindowParameter();
+    const ParameterGrp& hPrefGrp = static_cast<ParameterGrp&>(rCaller);
 
     if (strcmp(sReason, "FontSize") == 0 || strcmp(sReason, "Font") == 0) {
-        int fontSize = hPrefGrp->GetInt("FontSize", 10);
+        int fontSize = hPrefGrp.GetInt("FontSize", 10);
         QString fontFamily = QString::fromLatin1(hPrefGrp->GetASCII("Font", "Courier").c_str());
         
         QFont font(fontFamily, fontSize);
@@ -452,12 +460,31 @@ void PythonConsole::OnChange( Base::Subject<const char*> &rCaller,const char* sR
         QFontMetrics metric(font);
         int width = metric.width(QLatin1String("0000"));
         setTabStopWidth(width);
-    } else {
+    } 
+    else if (strcmp(sReason,"BackgroundColor") == 0) {
+        unsigned long background = hPrefGrp.GetUnsigned("BackgroundColor",ULONG_MAX); // default color (white)
+        int r,g,b;
+        r = ((background >> 24) & 0xff);
+        g = ((background >> 16) & 0xff);
+        b = ((background >> 8) & 0xff);
+        QPalette pal = palette();
+        pal.setColor(QPalette::Base, QColor(r, g, b, pal.color(QPalette::Base).alpha()));
+        setPalette(pal);
+    }
+    else if (strcmp(sReason,"BackgroundAlpha") == 0) {
+        int alpha = hPrefGrp.GetInt("BackgroundAlpha",255);
+        QPalette pal = palette();
+        QColor ncol = pal.color(QPalette::Base);
+        ncol.setAlpha(alpha);
+        pal.setColor(QPalette::Base, ncol);
+        setPalette(pal);
+    }
+    else {
         QMap<QString, QColor>::ConstIterator it = d->colormap.find(QString::fromLatin1(sReason));
         if (it != d->colormap.end()) {
             QColor color = it.value();
             unsigned long col = (color.red() << 24) | (color.green() << 16) | (color.blue() << 8);
-            col = hPrefGrp->GetUnsigned( sReason, col);
+            col = hPrefGrp.GetUnsigned( sReason, col);
             color.setRgb((col>>24)&0xff, (col>>16)&0xff, (col>>8)&0xff);
             pythonSyntax->setColor(QString::fromLatin1(sReason), color);
         }
