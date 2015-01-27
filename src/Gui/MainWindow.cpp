@@ -478,6 +478,9 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     }
     else 
         GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcPython, true);
+    
+    //all interface items are loaded, all anchors are valid now. lets setup the layout
+    GlobalDynamicInterfaceManager::get()->setupInterfaceItems();
 
 #if 0 //defined(Q_OS_WIN32) this portion of code is not able to run with a vanilla Qtlib build on Windows.
     // The MainWindowTabBar is used to show tabbed dock windows with icons
