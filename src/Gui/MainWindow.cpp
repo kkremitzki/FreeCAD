@@ -284,7 +284,9 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     setCentralWidget(vbox);
     
 #else
-    bool dynamicLayout = usesDynamicInterface();
+    ParameterGrp::handle group = App::GetApplication().GetUserParameter().GetGroup("BaseApp")->
+                GetGroup("Preferences")->GetGroup("Interface");
+    bool dynamicLayout = group->GetBool("ReplaceDockers", false);
     if(!dynamicLayout) {
         d->declarativeView = NULL;
         d->mdiArea = new QMdiArea();
@@ -363,6 +365,10 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     if(d->mdiArea) {
         connect(d->mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)),
                 this, SLOT(onWindowActivated(QMdiSubWindow* )));
+    }
+    else {
+        connect(GlobalDynamicInterfaceManager::get(), SIGNAL(viewActivated(MDIView*)),
+                this, SLOT(onWindowActivated(MDIView*)));
     }
 #else
     connect(d->windowMapper, SIGNAL(mapped(QWidget *)),
@@ -486,7 +492,8 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
         GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcPython, true);
     
     //all interface items are loaded, all anchors are valid now. lets setup the layout
-    GlobalDynamicInterfaceManager::get()->setupInterfaceItems();
+    if(dynamicLayout)
+        GlobalDynamicInterfaceManager::get()->setupInterfaceItems();
 
 #if 0 //defined(Q_OS_WIN32) this portion of code is not able to run with a vanilla Qtlib build on Windows.
     // The MainWindowTabBar is used to show tabbed dock windows with icons
@@ -633,6 +640,8 @@ void MainWindow::closeActiveWindow ()
 #if !defined (NO_USE_QT_MDI_AREA)
     if(d->mdiArea)
         d->mdiArea->closeActiveSubWindow();
+    else
+        GlobalDynamicInterfaceManager::get()->closeActiveView();
 #else
     d->workspace->closeActiveWindow();
 #endif
@@ -653,6 +662,8 @@ void MainWindow::activateNextWindow ()
 #if !defined (NO_USE_QT_MDI_AREA)
     if(d->mdiArea)
         d->mdiArea->activateNextSubWindow();
+    else
+        GlobalDynamicInterfaceManager::get()->activateNextView();
 #else
     d->workspace->activateNextWindow();
 #endif
@@ -663,6 +674,8 @@ void MainWindow::activatePreviousWindow ()
 #if !defined (NO_USE_QT_MDI_AREA)
     if(d->mdiArea)
         d->mdiArea->activatePreviousSubWindow();
+    else
+        GlobalDynamicInterfaceManager::get()->activatePreviousView();
 #else
     d->workspace->activatePreviousWindow();
 #endif
@@ -943,7 +956,7 @@ void MainWindow::removeWindow(Gui::MDIView* view)
     if(d->mdiArea)
         d->mdiArea->removeSubWindow(parent);
     else {
-        Base::Console().Message("remove Windwow\n");
+        GlobalDynamicInterfaceManager::get()->closeView(view);
     }
     parent->deleteLater();
 }
@@ -980,7 +993,11 @@ void MainWindow::onSetActiveSubWindow(QWidget *window)
 
 void MainWindow::setActiveWindow(MDIView* view)
 {
-    onSetActiveSubWindow(view->parentWidget());
+    if(d->mdiArea)
+        onSetActiveSubWindow(view->parentWidget());
+    else
+        GlobalDynamicInterfaceManager::get()->activateView(view);
+    
     d->activeView = view;
     Application::Instance->viewActivated(view);
 }
@@ -1007,6 +1024,13 @@ void MainWindow::onWindowActivated(QMdiSubWindow* w)
     d->activeView = view;
     Application::Instance->viewActivated(view);
 }
+
+void MainWindow::onWindowActivated(MDIView* view)
+{
+    d->activeView = view;
+    Application::Instance->viewActivated(view);
+}
+
 
 void MainWindow::onWindowsMenuAboutToShow()
 {
@@ -1113,6 +1137,11 @@ QList<QWidget*> MainWindow::windows(QMdiArea::WindowOrder order) const
             mdis << (*it)->widget();
         }
     }    
+    else {
+        Q_FOREACH(QWidget* w, GlobalDynamicInterfaceManager::get()->views()) {
+            mdis.push_back(w);
+        }
+    }
     return mdis;
 }
 
@@ -1813,7 +1842,7 @@ void MainWindow::customEvent(QEvent* e)
 
 bool MainWindow::usesDynamicInterface()
 {
-    return true;
+    return (d->mdiArea==NULL) ? true : false;
 }
 
 

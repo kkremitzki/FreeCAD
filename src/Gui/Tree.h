@@ -93,7 +93,6 @@ protected:
     void dropEvent(QDropEvent *event);
     //@}
     bool event(QEvent *e);
-    virtual bool viewportEvent(QEvent* event);
     void keyPressEvent(QKeyEvent *event);
     void mouseDoubleClickEvent(QMouseEvent * event);
 
