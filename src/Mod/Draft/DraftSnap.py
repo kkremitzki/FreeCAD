@@ -35,7 +35,7 @@ __url__ = "http://www.freecadweb.org"
 import FreeCAD, FreeCADGui, math, Draft, DraftGui, DraftTrackers, DraftVecUtils
 from FreeCAD import Vector
 from pivy import coin
-from PySide import QtCore,QtGui
+from PySide import QtCore,QtGui,QtDeclarative
 
 class Snapper:
     """The Snapper objects contains all the functionality used by draft
@@ -857,15 +857,25 @@ class Snapper:
         "setCursor(self,mode=None): sets or resets the cursor to the given mode or resets"
         if self.selectMode:
             mw = FreeCADGui.getMainWindow()
-            for w in mw.findChild(QtGui.QMdiArea).findChildren(QtGui.QWidget):
-                if w.metaObject().className() == "SIM::Coin3D::Quarter::QuarterWidget":
-                    w.unsetCursor()
+            view = mw.findChild(QtGui.QMdiArea);
+            if(view == None):
+                FreeCADGui.ActiveDocument.ActiveView.unsetOverrideCursor()
+            else:
+                clist = view.findChildren(QtGui.QWidget)
+                for w in clist:
+                    if w.metaObject().className() == "SIM::Coin3D::Quarter::QuarterWidget":
+                        w.unsetCursor()
             self.cursorMode = None
         elif not mode:
             mw = FreeCADGui.getMainWindow()
-            for w in mw.findChild(QtGui.QMdiArea).findChildren(QtGui.QWidget):
-                if w.metaObject().className() == "SIM::Coin3D::Quarter::QuarterWidget":
-                    w.unsetCursor()
+            view = mw.findChild(QtGui.QMdiArea);
+            if(view == None):
+                FreeCADGui.ActiveDocument.ActiveView.unsetOverrideCursor();
+            else:
+                clist = view.findChildren(QtGui.QWidget);
+                for w in clist:
+                    if w.metaObject().className() == "SIM::Coin3D::Quarter::QuarterWidget":
+                        w.unsetCursor()
             self.cursorMode = None
         else:
             if mode != self.cursorMode:
@@ -881,9 +891,14 @@ class Snapper:
                 qp.end()
                 cur = QtGui.QCursor(newicon,8,8)
                 mw = FreeCADGui.getMainWindow()
-                for w in mw.findChild(QtGui.QMdiArea).findChildren(QtGui.QWidget):
-                    if w.metaObject().className() == "SIM::Coin3D::Quarter::QuarterWidget":
-                        w.setCursor(cur)
+                view = mw.findChild(QtGui.QMdiArea);
+                if(view == None):
+                    FreeCADGui.ActiveDocument.ActiveView.setOverrideCursor(cur);
+                else:
+                    clist = view.findChildren(QtGui.QWidget);
+                    for w in clist:
+                        if w.metaObject().className() == "SIM::Coin3D::Quarter::QuarterWidget":
+                            w.setCursor(cur)
                 self.cursorMode = mode
 
     def restack(self):

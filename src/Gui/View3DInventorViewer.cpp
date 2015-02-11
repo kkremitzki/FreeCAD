@@ -2550,35 +2550,50 @@ void View3DInventorViewer::setCursorRepresentation(int modearg)
     switch (modearg) {
     case NavigationStyle::IDLE:
     case NavigationStyle::INTERACT:
-        if (isEditing())
-            this->getWidget()->setCursor(this->editCursor);
-        else
-            this->getWidget()->setCursor(QCursor(Qt::ArrowCursor));
+        if(isEditing()) {
+            rootObject()->setCursor(this->editCursor);
+            setCursor(this->editCursor);
+        }
+        else {
+            rootObject()->setCursor(QCursor(Qt::ArrowCursor));
+            setCursor(QCursor(Qt::ArrowCursor));
+        }
 
         break;
 
     case NavigationStyle::DRAGGING:
     case NavigationStyle::SPINNING:
-        this->getWidget()->setCursor(spinCursor);
+        rootObject()->setCursor(spinCursor);
+        setCursor(spinCursor);
         break;
 
     case NavigationStyle::ZOOMING:
-        this->getWidget()->setCursor(zoomCursor);
-        break;
+    {
+        rootObject()->setCursor(zoomCursor);
+        setCursor(zoomCursor);
+    }
+    break;
 
     case NavigationStyle::SEEK_MODE:
     case NavigationStyle::SEEK_WAIT_MODE:
     case NavigationStyle::BOXZOOM:
-        this->getWidget()->setCursor(Qt::CrossCursor);
-        break;
+    {
+        rootObject()->setCursor(Qt::CrossCursor);
+        setCursor(Qt::CrossCursor);
+    }
+    break;
 
     case NavigationStyle::PANNING:
-        this->getWidget()->setCursor(panCursor);
+        rootObject()->setCursor(panCursor);
+        setCursor(panCursor);
         break;
 
     case NavigationStyle::SELECTION:
-        this->getWidget()->setCursor(Qt::PointingHandCursor);
-        break;
+    {
+        rootObject()->setCursor(Qt::PointingHandCursor);
+        setCursor(Qt::PointingHandCursor);
+    }
+    break;
 
     default:
         assert(0);
@@ -2589,20 +2604,33 @@ void View3DInventorViewer::setCursorRepresentation(int modearg)
 void View3DInventorViewer::setEditing(SbBool edit)
 {
     this->editing = edit;
-    this->getWidget()->setCursor(QCursor(Qt::ArrowCursor));
-    this->editCursor = QCursor();
-}
-
-void View3DInventorViewer::setComponentCursor(const QCursor& cursor)
-{
-    this->getWidget()->setCursor(cursor);
+    this->editCursor = QCursor(Qt::ArrowCursor);
+    setCursorRepresentation(navigation->getViewingMode());
 }
 
 void View3DInventorViewer::setEditingCursor(const QCursor& cursor)
-{
-    this->getWidget()->setCursor(cursor);
-    this->editCursor = this->getWidget()->cursor();
+{    
+    this->editCursor = cursor;
+    setCursorRepresentation(navigation->getViewingMode());
 }
+
+QCursor View3DInventorViewer::editingCursor()
+{
+    return this->editCursor;
+}
+
+
+void View3DInventorViewer::setComponentCursor(QCursor cursor)
+{
+    this->rootObject()->setCursor(cursor);
+    setCursor(cursor);
+}
+
+void View3DInventorViewer::clearComponentCursor()
+{
+    this->setCursorRepresentation(navigation->getViewingMode());
+}
+
 
 void View3DInventorViewer::selectCB(void* viewer, SoPath* path)
 {

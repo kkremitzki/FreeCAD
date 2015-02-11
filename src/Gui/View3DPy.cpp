@@ -54,6 +54,7 @@
 #include "View3DViewerPy.h"
 #include "ActiveObjectList.h"
 
+#include "WidgetFactory.h"
 
 #include <Base/Console.h>
 #include <Base/Exception.h>
@@ -179,7 +180,8 @@ void View3DInventorPy::init_type()
         "'addFinishCallback','addStartCallback','addMotionCallback','addValueChangedCallback'\n");
     add_varargs_method("setActiveObject", &View3DInventorPy::setActiveObject, "setActiveObject(name,object)\nadd or set a new active object");
     add_varargs_method("getActiveObject", &View3DInventorPy::getActiveObject, "getActiveObject(name)\nreturns the active object for the given type");
-
+    add_varargs_method("setOverrideCursor",&View3DInventorPy::setOverrideCursor,"set the current cursor");
+    add_varargs_method("unsetOverrideCursor", &View3DInventorPy::unsetOverrideCursor, "clears any override cursors");
 }
 
 View3DInventorPy::View3DInventorPy(View3DInventor *vi)
@@ -2228,4 +2230,22 @@ Py::Object View3DInventorPy::getActiveObject(const Py::Tuple& args)
         return Py::None();
     
     return Py::Object(obj->getPyObject());
+}
+
+Py::Object View3DInventorPy::setOverrideCursor(const Py::Tuple& args)
+{
+    Gui::PythonWrapper wrap;
+    wrap.loadCoreModule();
+    wrap.loadGuiModule();
+    QCursor *c = wrap.toQtClass<QCursor>(args[0]);
+    if(c)
+        _view->setOverrideCursor(*c);
+    
+    return Py::None();
+}
+
+Py::Object View3DInventorPy::unsetOverrideCursor(const Py::Tuple&)
+{
+    _view->restoreOverrideCursor();    
+    return Py::None();
 }

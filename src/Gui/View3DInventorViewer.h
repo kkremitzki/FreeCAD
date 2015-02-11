@@ -227,11 +227,15 @@ public:
     SbBool isEditing() const { return this->editing; }
     void setEditingCursor (const QCursor& cursor);
     void setComponentCursor(const QCursor& cursor);
+    QCursor editingCursor();
     void setRedirectToSceneGraph(SbBool redirect) { this->redirected = redirect; }
     SbBool isRedirectedToSceneGraph() const { return this->redirected; }
     void setRedirectToSceneGraphEnabled(SbBool enable) { this->allowredir = enable; }
     SbBool isRedirectToSceneGraphEnabled(void) const { return this->allowredir; }
     //@}
+    
+    void setComponentCursor(QCursor cursor);
+    void clearComponentCursor();
 
     /** @name Pick actions */
     //@{

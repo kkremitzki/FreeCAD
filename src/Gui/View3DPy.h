@@ -105,6 +105,8 @@ public:
     Py::Object removeDraggerCallback(const Py::Tuple&);
     Py::Object setActiveObject(const Py::Tuple&);
     Py::Object getActiveObject(const Py::Tuple&);
+    Py::Object setOverrideCursor(const Py::Tuple&);
+    Py::Object unsetOverrideCursor(const Py::Tuple&);
 
 private:
     static void eventCallback(void * ud, SoEventCallback * n);
