@@ -1183,7 +1183,7 @@ bool Document::isLastView(void)
 bool Document::canClose ()
 {
     if (!getDocument()->isClosable()) {
-        QMessageBox::warning(getActiveView(),
+        QMessageBox::warning(NULL,
             QObject::tr("Document not closable"),
             QObject::tr("The document is not closable for the moment."));
         return false;

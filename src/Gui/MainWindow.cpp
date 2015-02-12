@@ -397,20 +397,17 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
 #endif
 
     // Tree view
-    if(!dynamicLayout) {
-        TreeDockWidget* tree = new TreeDockWidget(0, this);
-        tree->setObjectName
-            (QString::fromLatin1(QT_TRANSLATE_NOOP("QDockWidget","Tree view")));
-        tree->setMinimumWidth(210);
+    TreeDockWidget* tree = new TreeDockWidget(0, this);
+    tree->setObjectName
+        (QString::fromLatin1(QT_TRANSLATE_NOOP("QDockWidget","Tree view")));
+    tree->setMinimumWidth(210);
+
+    if(!dynamicLayout) 
+       pDockMgr->registerDockWindow("Std_TreeView", tree);
     
-        pDockMgr->registerDockWindow("Std_TreeView", tree);   
-    }
-    else  {
-        TreeWidget* tree = new TreeWidget(this);
-        tree->setObjectName
-            (QString::fromAscii(QT_TRANSLATE_NOOP("QDockWidget","Tree view")));
-        GlobalDynamicInterfaceManager::get()->addInterfaceItem(tree, true);
-    }
+    else  
+       GlobalDynamicInterfaceManager::get()->addInterfaceItem(tree, true);
+    
 
     // Property view
     PropertyDockView* pcPropView = new PropertyDockView(0, this);
