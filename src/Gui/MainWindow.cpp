@@ -396,17 +396,21 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     pDockMgr->registerDockWindow("Std_HelpView", pcHelpView);
 #endif
 
-    // Tree view
-    TreeDockWidget* tree = new TreeDockWidget(0, this);
-    tree->setObjectName
-        (QString::fromLatin1(QT_TRANSLATE_NOOP("QDockWidget","Tree view")));
-    tree->setMinimumWidth(210);
-
-    if(!dynamicLayout) 
+    if(!dynamicLayout) {
+       TreeDockWidget* tree = new TreeDockWidget(0, this);
+       tree->setObjectName
+           (QString::fromLatin1(QT_TRANSLATE_NOOP("QDockWidget","Tree view")));
+       tree->setMinimumWidth(210);    
        pDockMgr->registerDockWindow("Std_TreeView", tree);
-    
-    else  
-       GlobalDynamicInterfaceManager::get()->addInterfaceItem(tree, true);
+    }
+    else { 
+       TreeWidget* tree = new TreeWidget;
+       tree->setObjectName
+           (QString::fromAscii(QT_TRANSLATE_NOOP("QDockWidget","Tree view")));
+       GlobalDynamicInterfaceManager::get()->addInterfaceItem(tree, 
+                                                              QString::fromAscii("Std_TreeView"),
+                                                              true);
+    }
     
 
     // Property view
@@ -417,7 +421,9 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     if(!dynamicLayout)
         pDockMgr->registerDockWindow("Std_PropertyView", pcPropView);
     else 
-        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcPropView, true);
+        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcPropView,
+                                                               QString::fromAscii("Std_PropertyView"),
+                                                               true);
 
     // Selection view
     SelectionView* pcSelectionView = new SelectionView(0, this);
@@ -427,7 +433,9 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     if(!dynamicLayout)
         pDockMgr->registerDockWindow("Std_SelectionView", pcSelectionView);
     else 
-        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcSelectionView, true);
+        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcSelectionView,
+                                                               QString::fromAscii("Std_SelectionView"),
+                                                               true);
 
     // Combo view
     CombiView* pcCombiView = new CombiView(0, this);
@@ -442,7 +450,9 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     else {
         Gui::TaskView::TaskView* task = new Gui::TaskView::TaskView(this);
         task->setObjectName(QString::fromAscii(QT_TRANSLATE_NOOP("QDockWidget","Task View")));
-        GlobalDynamicInterfaceManager::get()->addInterfaceItem(task, true);
+        GlobalDynamicInterfaceManager::get()->addInterfaceItem(task,
+                                                               QString::fromAscii("Std_TaskView"),
+                                                               true);
     }
 
 #if QT_VERSION < 0x040500
@@ -461,7 +471,9 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     if(!dynamicLayout)
         pDockMgr->registerDockWindow("Std_ReportView", pcReport);
     else 
-        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcReport, true);
+        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcReport,
+                                                               QString::fromAscii("Std_ReportView"),
+                                                               true);
 
     // Python console
     PythonConsole* pcPython = new PythonConsole(this);
@@ -486,7 +498,9 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
         }
     }
     else 
-        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcPython, true);
+        GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcPython,
+                                                               QString::fromAscii("Std_PythonView"),
+                                                               true);
     
     //all interface items are loaded, all anchors are valid now. lets setup the layout
     if(dynamicLayout)

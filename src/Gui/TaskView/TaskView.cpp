@@ -411,6 +411,7 @@ TaskView::TaskView(QWidget *parent)
         setFrameShape(QFrame::NoFrame);
         setAttribute(Qt::WA_TranslucentBackground, true);
         scheme->panelBackground = QBrush(Qt::transparent);
+        taskPanel->layout()->setMargin(0);
         
         //attach parameter Observer
         hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Interface");
@@ -419,11 +420,10 @@ TaskView::TaskView(QWidget *parent)
         //and load the needed settings
         OnChange(*hGrp,"BackgroundColor");
         OnChange(*hGrp,"BackgroundAlpha");
-        
-        taskPanel->setAttribute(Qt::WA_NoMousePropagation);
     }
 
     taskPanel->setScheme(scheme);
+    calculatePartialSize();
 }
 
 TaskView::~TaskView()
@@ -588,6 +588,8 @@ void TaskView::showDialog(TaskDialog *dlg)
     ActiveDialog = dlg;
 
     ActiveDialog->open();
+    
+    calculatePartialSize();
 }
 
 void TaskView::removeDialog(void)
@@ -625,6 +627,7 @@ void TaskView::removeDialog(void)
         remove->emitDestructionSignal();
         delete remove;
     }
+    calculatePartialSize();
 }
 
 void TaskView::updateWatcher(void)
@@ -662,6 +665,7 @@ void TaskView::updateWatcher(void)
     // give it the focus back.
     if (fwp && fwp->isVisible())
         fwp->setFocus();
+    calculatePartialSize();
 }
 
 void TaskView::addTaskWatcher(const std::vector<TaskWatcher*> &Watcher)
@@ -799,6 +803,40 @@ void TaskView::OnChange(Base::Subject< const char* >& rCaller, const char* rcRea
         taskPanel->setScheme(scheme);
     }
 }
+
+void TaskView::calculatePartialSize()
+{
+
+    Base::Console().Message("calculate partial size\n");
+    int height = 0.;
+    
+    if(ActiveCtrl)
+        height += ActiveCtrl->rect().bottom() + 8;
+    
+    if(ActiveDialog) {
+        const std::vector<QWidget*> cont = ActiveDialog->getDialogContent();
+        Q_FOREACH(QWidget* wid, cont) {
+            Base::Console().Message("calculate children %s\n", wid->objectName().toStdString().c_str());
+            Base::Console().Message("rect: %i, %i, %i, %i\n", wid->rect().x(), wid->rect().y(), wid->rect().width(), wid->rect().height());
+            height += wid->sizeHint().height() + 8;
+        }
+    }
+    else {
+        //no dialog means we show the watchers
+        for (std::vector<TaskWatcher*>::iterator it=ActiveWatcher.begin();it!=ActiveWatcher.end();++it) {
+            std::vector<QWidget*> &cont = (*it)->getWatcherContent();
+            for (std::vector<QWidget*>::iterator it2=cont.begin();it2!=cont.end();++it2) {
+                if((*it2)->isVisible()) {
+                    height += (*it2)->sizeHint().height() + 8;
+                }
+            }
+        }
+    }
+
+    //only make the height partial
+    Q_EMIT partialSizeHint(QRectF(-1, 0, -1, height));
+}
+
 
 
 #include "moc_TaskView.cpp"
