@@ -218,6 +218,7 @@ public:
     
 protected:
     void setRenderContext(QuarterWidget* w, QuarterWidgetP* wp);
+    void resetInitialisation();
     
     friend class QuarterWidget;
 private:
