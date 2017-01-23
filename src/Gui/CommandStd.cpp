@@ -734,11 +734,13 @@ StdCmdAddonManager::StdCmdAddonManager()
 void StdCmdAddonManager::activated(int iMsg)
 {
     Q_UNUSED(iMsg); 
-    static QPointer<QDialog> dlg = 0;
+    doCommand(Doc, "import addon_manager");
+    doCommand(Doc, "addon_manager.AddonsInstaller().exec_()");
+    /*static QPointer<QDialog> dlg = 0;
     if (!dlg)
       dlg = new Gui::Dialog::AddonManager(getMainWindow());
     dlg->setAttribute(Qt::WA_DeleteOnClose);
-    dlg->show();
+    dlg->show();*/
 }
 
 namespace Gui {
