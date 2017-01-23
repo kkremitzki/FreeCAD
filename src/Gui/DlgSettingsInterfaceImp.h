@@ -24,15 +24,14 @@
 #ifndef GUI_DIALOG_DLGSETTINGSINTERFACEIMP_H
 #define GUI_DIALOG_DLGSETTINGSINTERFACEIMP_H
 
-#include "ui_DlgSettingsInterface.h"
+#include "DlgSettingsInterfaceImp.h"
 #include "PropertyPage.h"
 
 namespace Gui {
 namespace Dialog {
 
 
-class DlgSettingsInterfaceImp : public PreferencePage, public Ui_DlgSettingsInterface
-{
+class DlgSettingsInterfaceImp : public PreferencePage, public DlgSettingsInterface {
     Q_OBJECT
 
 public:

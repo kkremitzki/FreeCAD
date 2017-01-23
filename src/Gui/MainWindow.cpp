@@ -145,6 +145,7 @@ struct MainWindowP
     QTimer* actionTimer;
     QTimer* activityTimer;
     QTimer* visibleTimer;
+#if !defined (NO_USE_QT_MDI_AREA)
     QMdiArea* mdiArea;
     //dynamic layout members
     QDeclarativeView* declarativeView;
@@ -366,6 +367,7 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     d->windowMapper = new QSignalMapper(this);
 
     // connection between workspace, window menu and tab bar
+#if !defined (NO_USE_QT_MDI_AREA)
     connect(d->windowMapper, SIGNAL(mapped(QWidget *)),
             this, SLOT(onSetActiveSubWindow(QWidget*)));
     if(d->mdiArea) {
@@ -485,12 +487,12 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     pcPython->setWindowIcon(Gui::BitmapFactory().iconFromTheme("applications-python"));
     pcPython->setObjectName
         (QString::fromLatin1(QT_TRANSLATE_NOOP("QDockWidget","Python console")));
-    if(!dynamicInterface)
+    if (!dynamicInterface) {
         pDockMgr->registerDockWindow("Std_PythonView", pcPython);
 
         //Dag View.
         //work through parameter.
-        ParameterGrp::handle group = App::GetApplication().GetUserParameter().
+        /*ParameterGrp::handle group = App::GetApplication().GetUserParameter().
               GetGroup("BaseApp")->GetGroup("Preferences")->GetGroup("DAGView");
         bool enabled = group->GetBool("Enabled", false);
         group->SetBool("Enabled", enabled); //ensure entry exists.
@@ -499,7 +501,7 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
           dagDockWindow->setObjectName
               (QString::fromLatin1(QT_TRANSLATE_NOOP("QDockWidget","DAG View")));
           pDockMgr->registerDockWindow("Std_DAGView", dagDockWindow);
-        }
+        }*/
     }
     else 
         GlobalDynamicInterfaceManager::get()->addInterfaceItem(pcPython,

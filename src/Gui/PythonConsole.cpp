@@ -456,7 +456,7 @@ void PythonConsole::OnChange( Base::Subject<const char*> &rCaller,const char* sR
 
     if (strcmp(sReason, "FontSize") == 0 || strcmp(sReason, "Font") == 0) {
         int fontSize = hPrefGrp.GetInt("FontSize", 10);
-        QString fontFamily = QString::fromLatin1(hPrefGrp->GetASCII("Font", "Courier").c_str());
+        QString fontFamily = QString::fromLatin1(hPrefGrp.GetASCII("Font", "Courier").c_str());
         
         QFont font(fontFamily, fontSize);
         setFont(font);

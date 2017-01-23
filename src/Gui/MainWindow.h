@@ -31,9 +31,9 @@
 
 #include <QEvent>
 #include <QMainWindow>
+#ifndef NO_USE_QT_MDI_AREA
 #include <QMdiArea>
 #else
-#include <QWorkspace>
 #endif
 
 class QMimeData;
@@ -91,9 +91,6 @@ public:
      * Returns a list of all MDI windows in the worpspace.
      */
     QList<QWidget*> windows(QMdiArea::WindowOrder order = QMdiArea::CreationOrder) const;
-#else
-    QList<QWidget*> windows(QWorkspace::WindowOrder order = QWorkspace::CreationOrder) const;
-#endif
     
 #if !defined(NO_USE_QT_MDI_AREA) 
     QMdiArea* getMdiArea();

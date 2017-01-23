@@ -229,7 +229,6 @@ protected:
 #else
     QSint::ActionPanel* taskPanel;
 #endif
-    iisTaskPanelScheme* scheme;
     TaskDialog *ActiveDialog;
     TaskEditControl *ActiveCtrl;
 

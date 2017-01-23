@@ -155,7 +155,7 @@ View3DInventor::View3DInventor(Gui::Document* pcDocument, QWidget* parent,
         _viewer->getSoRenderManager()->getGLRenderAction()->setSmoothing(true);
 
     // create the inventor widget and set the defaults
-    _viewer->setDocument(this->_pcDocument);
+#if !defined (NO_USE_QT_MDI_AREA)
     _viewer->setDocument(this->_pcDocument);
 
     // http://forum.freecadweb.org/viewtopic.php?f=3&t=6055&sid=150ed90cbefba50f1e2ad4b4e6684eba

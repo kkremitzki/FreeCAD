@@ -285,6 +285,7 @@ Py::Object PythonWrapper::fromQIcon(const QIcon* icon)
     Q_UNUSED(icon);
 #endif
     throw Py::RuntimeError("Failed to wrap icon");
+}
 
 /*convienience macro to ease the wrapper generation*/
 #define WRAP_QT_CLASS(class) \

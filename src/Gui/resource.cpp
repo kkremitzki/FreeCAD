@@ -49,7 +49,7 @@
 #include "DlgCustomizeSpNavSettings.h"
 #include "InputField.h"
 #include "QuantitySpinBox.h"
-#include "DlgSettingsInterfaceImp.h"
+//#include "DlgSettingsInterfaceImp.h"
 
 using namespace Gui;
 using namespace Gui::Dialog;
@@ -71,7 +71,7 @@ WidgetFactorySupplier::WidgetFactorySupplier()
     new PrefPageProducer<DlgSettingsUnitsImp>     ( QT_TRANSLATE_NOOP("QObject","General") );
     new PrefPageProducer<DlgSettings3DViewImp>    ( QT_TRANSLATE_NOOP("QObject","Display") );
     new PrefPageProducer<DlgSettingsViewColor>    ( QT_TRANSLATE_NOOP("QObject","Display") );
-    new PrefPageProducer<DlgSettingsInterfaceImp> ( QT_TRANSLATE_NOOP("QObject","Display") );
+    //new PrefPageProducer<DlgSettingsInterfaceImp> ( QT_TRANSLATE_NOOP("QObject","Display") );
 
     // ADD YOUR CUSTOMIZE PAGES HERE
     //

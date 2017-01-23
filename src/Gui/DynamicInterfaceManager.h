@@ -26,7 +26,8 @@
 #include "PreCompiled.h"
 
 #include "MDIView.h"
-#include <QDeclarativeView>
+#include <QtDeclarative/QDeclarativeView>
+#include <QtDeclarative/QDeclarativeItem>
 
 namespace Gui {
     

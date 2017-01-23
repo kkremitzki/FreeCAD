@@ -406,7 +406,9 @@ TaskView::TaskView(QWidget *parent)
     App::GetApplication().signalRedoDocument.connect
         (boost::bind(&Gui::TaskView::TaskView::slotRedoDocument, this, _1));
         
-    scheme = iisFreeCADTaskPanelScheme::defaultScheme();
+    //iisTaskPanelScheme* scheme = iisFreeCADTaskPanelScheme::defaultScheme();
+    QSint::ActionPanelScheme* scheme = QSint::FreeCADPanelScheme::defaultScheme();
+
     if(Gui::MainWindow::getInstance()->usesDynamicInterface()) {
         setFrameShape(QFrame::NoFrame);
         setAttribute(Qt::WA_TranslucentBackground, true);
@@ -783,9 +785,12 @@ void TaskView::restoreActionStyle()
     static_cast<QSint::FreeCADPanelScheme*>(QSint::FreeCADPanelScheme::defaultScheme())->restoreActionStyle();
     taskPanel->setScheme(QSint::FreeCADPanelScheme::defaultScheme());
 #endif
+}
+
 void TaskView::OnChange(Base::Subject< const char* >& rCaller, const char* rcReason)
 {
     const ParameterGrp& rGrp = static_cast<ParameterGrp&>(rCaller);
+    QSint::ActionPanelScheme* scheme = QSint::FreeCADPanelScheme::defaultScheme();
     if (strcmp(rcReason,"BackgroundColor") == 0) {
         unsigned long background = rGrp.GetUnsigned("BackgroundColor",ULONG_MAX); // default color (white)
         int r,g,b;
@@ -833,7 +838,6 @@ void TaskView::calculatePartialSize()
     //only make the height partial
     Q_EMIT partialSizeHint(QRectF(-1, 0, -1, height));
 }
-
 
 
 #include "moc_TaskView.cpp"

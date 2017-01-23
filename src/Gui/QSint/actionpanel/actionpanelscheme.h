@@ -8,6 +8,7 @@
 #ifndef TASKPANELSCHEME_H
 #define TASKPANELSCHEME_H
 
+#include <QBrush>
 #include <QtCore/QString>
 #include <QtCore/QSize>
 
@@ -48,6 +49,10 @@ public:
     Must be reimplemented in the own schemes.
     */
   static ActionPanelScheme* defaultScheme();
+
+  QBrush panelBackground;
+  QBrush groupBackground;
+  QBrush headerBackground;
 
   /// Height of the header in pixels.
   int headerSize;
