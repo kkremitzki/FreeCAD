@@ -32,7 +32,7 @@
 #endif
 
 #include "AddonManager.h"
-#include "Ui_AddonManager.h"
+#include "ui_AddonManager.h"
 
 #include "Application.h"
 #include "Document.h"
