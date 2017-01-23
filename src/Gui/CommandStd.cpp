@@ -27,6 +27,7 @@
 # include <QMessageBox>
 # include <QSharedPointer>
 # include <QWhatsThis>
+#include <QProcess>
 #if QT_VERSION >= 0x040200
 # include <QDesktopServices>
 # include <QUrl>
@@ -61,6 +62,7 @@
 #include "Workbench.h"
 #include "Selection.h"
 #include "DlgUnitsCalculatorImp.h"
+#include "AddonManager.h"
 
 using Base::Console;
 using Base::Sequencer;
@@ -712,6 +714,31 @@ void StdCmdUnitsCalculator::activated(int iMsg)
     dlg->show();
 }
 
+//===========================================================================
+// Std_AddonManager
+//===========================================================================
+DEF_STD_CMD(StdCmdAddonManager);
+
+StdCmdAddonManager::StdCmdAddonManager()
+  : Command("Std_AddonManager")
+{
+    sGroup        = QT_TR_NOOP("Tools");
+    sMenuText     = QT_TR_NOOP("&Addon Manager");
+    sToolTipText  = QT_TR_NOOP("Manage FreeCAD workbenches and macros");
+    sWhatsThis    = QT_TR_NOOP("Manage FreeCAD workbenches and macros");
+    sStatusTip    = QT_TR_NOOP("Manage FreeCAD workbenches and macros");
+    sPixmap       = "addon-manager";
+    eType         = 0;
+}
+
+void StdCmdAddonManager::activated(int iMsg)
+{
+    /*Q_UNUSED(iMsg); 
+    Gui::Dialog::AddonManager* dlg = new Gui::Dialog::AddonManager(getMainWindow());
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->show();*/
+}
+
 namespace Gui {
 
 void CreateStdCommands(void)
@@ -738,6 +765,7 @@ void CreateStdCommands(void)
     rcCmdMgr.addCommand(new StdCmdFreeCADFAQ());
     rcCmdMgr.addCommand(new StdCmdPythonWebsite());
     rcCmdMgr.addCommand(new StdCmdUnitsCalculator());
+    rcCmdMgr.addCommand(new StdCmdAddonManager());
     //rcCmdMgr.addCommand(new StdCmdMeasurementSimple());
     //rcCmdMgr.addCommand(new StdCmdDownloadOnlineHelp());
     //rcCmdMgr.addCommand(new StdCmdDescription());

@@ -188,6 +188,7 @@ endif(FREECAD_USE_3DCONNEXION AND APPLE)
 set(Gui_MOC_HDRS
     Action.h
     ActionFunction.h
+    AddonManager.h
     Assistant.h
     AutoSaver.h
     CallTips.h
@@ -313,6 +314,7 @@ endif()
 
 SET(Gui_UIC_SRCS
     AboutApplication.ui
+    AddonManager.ui
     Clipping.ui
     DemoMode.ui
     DlgActions.ui
@@ -403,6 +405,7 @@ SOURCE_GROUP("Command" FILES ${Command_SRCS})
 
 # The dialog sources
 SET(Dialog_CPP_SRCS
+    AddonManager.cpp
     Clipping.cpp
     DemoMode.cpp
     DlgActivateWindowImp.cpp
@@ -435,6 +438,7 @@ SET(Dialog_CPP_SRCS
 )
 
 SET(Dialog_HPP_SRCS
+    AddonManager.h
     Clipping.h
     DemoMode.h
     DlgActivateWindowImp.h
@@ -470,6 +474,7 @@ SET(Dialog_SRCS
     ${Dialog_CPP_SRCS}
     ${Dialog_HPP_SRCS}
     AboutApplication.ui
+    AddonManager.ui
     Clipping.ui
     DemoMode.ui
     DlgActivateWindow.ui
