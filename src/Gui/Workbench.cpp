@@ -549,12 +549,13 @@ MenuItem* StdWorkbench::setupMenuBar() const
           << "Separator" << visu
           << "Std_ToggleVisibility" << "Std_ToggleNavigation"
           << "Std_SetAppearance" << "Std_RandomColor" << "Separator" 
-          << "Std_DockViewMenu" << "Std_ViewStatusBar";
+          << "Std_Workbench" << "Std_ToolBarMenu" << "Std_DockViewMenu" << "Separator" 
+          << "Std_ViewStatusBar";
 
     // Tools
     MenuItem* tool = new MenuItem( menuBar );
     tool->setCommand("&Tools");
-    *tool << "Std_Workbench" << "Std_ToolBarMenu" << "Std_DlgParameter" << "Separator"
+    *tool << "Std_DlgParameter" << "Separator"
           << "Std_ViewScreenShot" << "Std_SceneInspector" 
           << "Std_ExportGraphviz" << "Std_ProjectUtil" << "Separator"
           << "Std_MeasureDistance" << "Separator" 
