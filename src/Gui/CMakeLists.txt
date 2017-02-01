@@ -22,6 +22,11 @@ if (BUILD_VR)
     add_definitions(-DBUILD_VR )
 endif(BUILD_VR)
 
+if (BUILD_ADDONMANAGER)
+    add_definitions(-DBUILD_ADDONMANAGER )
+endif(BUILD_ADDONMANAGER)
+
+
 include_directories(
     ${CMAKE_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
