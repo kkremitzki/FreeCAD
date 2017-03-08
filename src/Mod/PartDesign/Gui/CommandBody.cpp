@@ -211,11 +211,11 @@ void CmdPartDesignBody::activated(int iMsg)
 
     // Make the "Create sketch" prompt appear in the task panel
     doCommand(Gui,"Gui.Selection.clearSelection()");
-    doCommand(Gui,"Gui.Selection.addSelection(App.ActiveDocument.%s)", bodyName.c_str());
     if (actPart) {
         doCommand(Doc,"App.activeDocument().%s.addObject(App.ActiveDocument.%s)",
                  actPart->getNameInDocument(), bodyName.c_str());
     }
+    doCommand(Gui,"Gui.Selection.addSelection(App.ActiveDocument.%s)", bodyName.c_str());
 
     // The method 'SoCamera::viewBoundingBox' is still declared as protected in Coin3d versions
     // older than 4.0.
