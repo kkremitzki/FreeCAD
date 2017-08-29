@@ -19,6 +19,18 @@ INSTALL(
 
 INSTALL(
     FILES
+        Datum/__init__.py
+        Datum/DatumCommands.py
+        Datum/TaskDatumPoint.ui
+        Datum/TaskDatumLine.ui
+        Datum/TaskDatumPlane.ui
+    DESTINATION
+        Mod/PartDesign/Datum
+)
+
+
+INSTALL(
+    FILES
         Scripts/__init__.py
         Scripts/DistanceBolt.py
         Scripts/Epitrochoid.py
@@ -29,7 +41,7 @@ INSTALL(
         Scripts/Spring.py
     DESTINATION
         Mod/PartDesign/Scripts
-       )
+)
 
 INSTALL(
     FILES
@@ -53,7 +65,7 @@ INSTALL(
         PartDesignTests/TestThickness.py
     DESTINATION
         Mod/PartDesign/PartDesignTests
-       )
+)
         
 INSTALL(
     FILES

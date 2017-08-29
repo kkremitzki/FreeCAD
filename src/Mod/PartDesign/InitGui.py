@@ -49,6 +49,7 @@ class PartDesignWorkbench ( Workbench ):
 
         import PartDesignGui
         import PartDesign
+        from PartDesign.Datum import CommandPoint, CommandLine, CommandPlane
         try:
             import InvoluteGearFeature
         except ImportError:
@@ -57,6 +58,10 @@ class PartDesignWorkbench ( Workbench ):
             #    from FeatureHole import HoleGui
             #except:
             #    pass
+
+        Gui.addCommand('PartDesign_Point', CommandPoint())
+        Gui.addCommand('PartDesign_Line', CommandLine())
+        Gui.addCommand('PartDesign_Plane', CommandPlane())
 
     def GetClassName(self):
         return "PartDesignGui::Workbench"

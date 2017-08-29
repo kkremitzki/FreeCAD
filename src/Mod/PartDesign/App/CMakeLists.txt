@@ -145,6 +145,11 @@ SET(PartDesign_Scripts
     TestPartDesignApp.py
     InvoluteGearFeature.py
     InvoluteGearFeature.ui
+    Datum/__init__.py
+    Datum/DatumCommands.py
+    Datum/TaskDatumPoint.ui
+    Datum/TaskDatumLine.ui
+    Datum/TaskDatumPlane.ui
     Scripts/__init__.py
     Scripts/Gear.py
     Scripts/DistanceBolt.py
